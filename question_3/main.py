@@ -309,9 +309,9 @@ if __name__ == "__main__":
     gene_num = 55
     mutant_rate = 0.1
     popu = init_population()
-    iter = 100  # 100代
+    iter = 200  # 100代
 
-    while gen <= 100:
+    while gen <= 200:
         sons = cross_and_mutant(popu, mutant_rate)
         new_popu = elitist(popu, sons)
         popu = new_popu

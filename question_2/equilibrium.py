@@ -148,7 +148,7 @@ def get_equilibrium(pinyin_file_path, gen):
     equi_each = compare_in_each_finger()  # 单个手指的均衡性
     equilibrium = equi_entire / equi_each
 
-    if gen == 102:
+    if gen == 202:
         image_plot(nums_of_each_finger)
 
     return equilibrium
