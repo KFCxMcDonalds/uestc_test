@@ -110,7 +110,8 @@
     -   人体工程学
 
         为了提高键入文章的速度，通常可以采用以下原则：双手交替击键，食指、中指、无名指、小指的击键频度依次降低，尽量减少同一手指的越排操作等。文献[2]给出了上述原则的量化指标。文献[2]经过实验获取大量数据，处理出了**键盘键位相关速度当量表**，表中的数据为连续击键的时间相对值，采用向最小值归一，即击键速度最快的键位搭配的击键相对时间为1.0，表纵坐标表示先行键，横坐标表示后续键。部分表格如下图：
-        <img src="test/pictures/1.png" style="zoom:50%;" />
+       
+       <img src="pictures/1.png" width="300" />
 
         获取了文章的拼音后，根据编码顺序，可由上表得到输入该文章所需的时间当量。
 
@@ -156,7 +157,7 @@
 
 ​	对于该算法的详细步骤本文不再赘述，仅根据步骤顺序列出本文采用的方案。本文使用的NSGA2算法流程图如下：
 
-<img src="test/pictures/2.png" style="zoom:40%;" />
+<img src="pictures/2.png" width="400" />
 
 ##### 初始化种群
 
@@ -207,7 +208,8 @@
 *交叉概率*![](http://latex.codecogs.com/svg.latex?P_c)：为了使父代充分交叉，本文将交叉率设为**1**
 
 *变异概率*![](http://latex.codecogs.com/svg.latex?P_m)：变异是遗传算法中非常重要的部分，它可以让种群跳出当前区域，在更大的范围内搜索，寻找全局最优解。本文根据个体的适应度值，采取**动态变化的变异率**。如果适应值大于平均值，说明该个体优良，以更小的概率变异，以防止破坏种群的优良基因；如果适应值小与平均值，说明该个体相对较差，以更大的概率变异，寻求全局最优。公式如下：
-                                                           <img src="test/pictures/7.png" style="zoom:80%;" />
+                                                          <img src="pictures/7.png" width="400" />
+                                                          
 其中，![](http://latex.codecogs.com/svg.latex?P_{m1})是最大变异概率，最差的个体以最差的概率变异；![](http://latex.codecogs.com/svg.latex?P_{m2})是最小变异概率，可以保证即使最优秀的个体，也有一定的概率发生变异，不会将种群锁死。经过测试，![](http://latex.codecogs.com/svg.latex?P_{m1}=0.2,P_{m2}=0.1)时，运算结果较为稳定。 
 
 *进化代数gen*：根据测试，代数为**200**代左右时，可以得到相对稳定的结果。100代时容易出现极端值，300代时结果与200代相差不大。
@@ -248,7 +250,9 @@
 
 第二问全拼方法的使用频率表、均衡性图表如下：
 
-<figure class="half">     <img src="test/pictures/3.png" width=550>     <img src="test/pictures/4.png" width=550> </figure>
+<center class="half">
+   <img src="pictures/3.png" width="500"/><img src="pictures/4.png" width="500"/>
+</center>
 
 从热力图可以看出，全拼编码方式中，i键使用频率最高，其次是n、e等；从折线图可以看出，该方案中的手指分配并不符合认知，食指和中指的使用明显偏高，且小指使用数大于中指，降低了键入速度，均衡性较差
 
@@ -258,7 +262,9 @@
 
 优化方法的一组经典图表如下
 
-<figure class="half">     <img src="test/pictures/5.png" width=550>     <img src="test/pictures/6.png" width=550> </figure>
+<center class="half">
+   <img src="pictures/5.png" width="500"/><img src="pictures/6.png" width="500"/>
+</center>
 
 从热力图可以看出，使用频率最高的第一梯队多数为中指所控制的i-k-d等字母键，第二梯队多数为则为u-b-r-n等食指控制的字母键，无名指和小指则相对较少。
 
