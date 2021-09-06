@@ -1,4 +1,6 @@
 import random
+
+import pandas as pd
 from pypinyin import lazy_pinyin
 import question_2.efficiency as ef
 import question_2.equilibrium as eq
@@ -7,19 +9,24 @@ import numpy as np
 import q1_func
 
 
+global select_flag  # 1:选择最佳均衡度 2:选择最佳效率
 global N  # 种群数
 global gene_num  # 基因数
 global pinyin_list
+global alphabet
 global gen
-hanzi_file_path = "/Users/ivywu/Desktop/ivy/重要文件/电科保研/test/question_1/Chinese.txt"
+global code_list
+hanzi_file_path = "../question_1/Chinese.txt"  # 存储Chinese.txt文件的绝对路径
 new_pinyin_file_path = "new_pinyin.txt"
 
 
 def init_individual():
+    global gene_num
     rand_list = []
     for i in range(gene_num):
         rand_list.append(i)
 
+    # 非完全随机生成方式
     code = [0] * gene_num  # 所有声韵母的编码方式
     count = 0
     while count <= 1:
@@ -32,6 +39,11 @@ def init_individual():
         count += 1
     for pos in rand_list:
         code[pos] = random.sample(range(0, 26), 1)[0]
+
+    # 完全随机生成方式
+    # code = []
+    # for i in range(gene_num):
+    #     code.append(random.sample(range(26), 1)[0])
 
     return code
 
@@ -88,7 +100,7 @@ def mutant(individual):
     return individual
 
 
-def cross_and_mutant(popu, rate):
+def cross_and_mutant(popu, rate, fitness):
     # 需要生成N个新子代
     count = 0
     sons = []
@@ -97,9 +109,42 @@ def cross_and_mutant(popu, rate):
         son = cross(popu[parents[0]], popu[parents[1]])  # 离散重组
 
         # 概率变异
+        # 固定变异概率
+        # flag = random.random()
+        # if flag <= 0.1:
+        #     son = mutant(son)  # 变异
+
+        # 自适应变异概率
+        pm_1 = 0.2  # 上限
+        pm_2 = 0.1  # 下限
         flag = random.random()
-        if flag <= 0.1:
-            son = mutant(son)  # 变异
+        if fitness is list:
+            # 该子代适应度
+            son_fitness=[]
+            gene_to_str(son)
+            equi = eq.get_equilibrium(new_pinyin_file_path, gen)  # 均衡性
+            effi = ef.get_efficiency(new_pinyin_file_path)  # 适应度
+            son_fitness.append([equi, effi])
+
+            son_f = son_fitness[0] * 10000 / son_fitness[1]
+            sum = 0
+            max = 0
+            for i  in range(len(fitness)):
+                tmp = fitness[0] * 10000 / fitness[1]
+                sum += tmp
+                if tmp > max:
+                    max = tmp
+            avg_f = sum / len(fitness)
+            if son_f < avg_f:
+                pm = pm_1
+            else:
+                pm = pm_1 - (pm_1 - pm_2) * (son_f - avg_f) / (max - avg_f)
+
+            if flag <= pm:
+                son = mutant(son)
+        else:
+            if flag <= 0.1:
+                son = mutant(son)  # 变异
 
         sons.append(son)
         count += 1
@@ -114,6 +159,8 @@ def get_pinyin_list():
 
 
 def gene_to_str(individual):
+    global code_list
+    global alphabet
     new_pinyin_list = pinyin_list.copy()
     code_list = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "a", "s", "d", "f", "g", "h", "j", "k", "l", "z",
                  "x", "c", "v", "b", "n", "m", "zh", "ch", "sh", "iu", "ia", "ua", "uan", "ue", "ing", "uai", "uo",
@@ -182,6 +229,7 @@ def fast_non_dominated_sort(popu):
     F = [[]]  # 分层
 
     if 0 not in np:
+        print("**已不可分层**")
         F[0] = np
     else:
         while np != compare:
@@ -268,11 +316,12 @@ def elitist(popu, sons):
     for j in new_popu_number:
         new_popu.append(popu[j])
 
-    return new_popu
+    return new_popu, fitness
 
 
 def show(popu):
     global gen
+    global select_flag
     n = len(popu)
     fitness = []  # 两个适应度函数
     for i in range(n):
@@ -281,11 +330,16 @@ def show(popu):
         effi = ef.get_efficiency(new_pinyin_file_path)  # 适应度
         fitness.append([equi, effi])
 
-    # efficiency = [i[1] for i in fitness]
-    # ind = efficiency.index(min(efficiency))
+    ind = -1
 
-    efficiency = [i[0] for i in fitness]
-    ind = efficiency.index(max(efficiency))
+    if select_flag == 1:
+        efficiency = [i[0] for i in fitness]
+        ind = efficiency.index(max(efficiency))
+    elif select_flag == 2:
+        efficiency = [i[1] for i in fitness]
+        ind = efficiency.index(min(efficiency))
+
+
 
     best_individual = popu[ind]
     gene_to_str(best_individual)
@@ -294,8 +348,21 @@ def show(popu):
     gen += 1  # 绘图
     effi = ef.get_efficiency(new_pinyin_file_path)
     equi = eq.get_equilibrium(new_pinyin_file_path, gen)
-    str = "equilibrium is:%f\nefficiency is:%f" % (equi, effi)
-    print(str)  # *****************
+
+    df = pd.DataFrame()
+    df['中文声韵母'] = code_list
+    tmp = []
+    for i in best_individual:
+        tmp.append(alphabet[i])
+    df['对应编码'] = tmp
+    df.to_csv("output.csv", sep=',', header=True, index=True)
+    print("****************************************************")
+    print("**             output.csv输出文件已生成             **")
+    str = "**           equilibrium is:%f              **" % (equi)
+    print(str)
+    str ="**         efficiency is:%f             **" % (effi)
+    print(str)
+    print("****************************************************")
 
     # 绘图
     pinyin_str = open(new_pinyin_file_path, 'r').read()
@@ -304,19 +371,24 @@ def show(popu):
 
 if __name__ == "__main__":
     gen = 0
+    select_flag = 1  # 当前：最佳均衡度
     pinyin_list = get_pinyin_list()
     N = 30  # 种群数=30
     gene_num = 55
     mutant_rate = 0.1
     popu = init_population()
-    iter = 200  # 100代
+    iter = 200  # 200代
 
+    fitness = 0
     while gen <= 200:
-        sons = cross_and_mutant(popu, mutant_rate)
-        new_popu = elitist(popu, sons)
+        str = "当前运行第%d代" % gen
+        print(str)
+
+        sons = cross_and_mutant(popu, mutant_rate, fitness)
+        new_popu, fitness = elitist(popu, sons)
         popu = new_popu
         gen += 1
-        print(gen)
+
 
     show(popu)
 

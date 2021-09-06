@@ -1,7 +1,7 @@
 import xlrd
 import math
 
-finger_time_xlsx = "/Users/ivywu/Desktop/ivy/重要文件/电科保研/test/question_2/finger_time.xlsx"
+finger_time_xlsx = "../question_2/finger_time.xlsx"
 
 
 def xlsx_process(path):
